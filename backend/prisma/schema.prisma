@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SystemAdmin
+  OfficeStaff
+  TradePerson
+}
+
+enum HalfDayPeriod {
+  AM
+  PM
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  email       String     @unique
+  name        String
+  passwordHash String
+  role        UserRole
+  deletedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tradePerson TradePerson?
+  notes       Note[]     @relation("NoteAuthor")
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String
+  contact   String?
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  jobs      Job[]
+  notes     Note[]
+}
+
+model TradeRole {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  jobRequirements JobRequirement[]
+  tradePeople     TradePersonRole[]
+}
+
+model TradePerson {
+  id        Int               @id @default(autoincrement())
+  userId    Int               @unique
+  user      User              @relation(fields: [userId], references: [id])
+  deletedAt DateTime?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  roles       TradePersonRole[]
+  allocations Allocation[]
+  notes       Note[]          @relation("NoteTradePerson")
+}
+
+model TradePersonRole {
+  tradePersonId Int
+  tradeRoleId   Int
+
+  tradePerson TradePerson @relation(fields: [tradePersonId], references: [id])
+  tradeRole   TradeRole   @relation(fields: [tradeRoleId], references: [id])
+
+  @@id([tradePersonId, tradeRoleId])
+}
+
+model Job {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String?
+  clientId    Int
+  client      Client          @relation(fields: [clientId], references: [id])
+  materials   String?
+  deletedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  requirements JobRequirement[]
+  allocations  Allocation[]
+}
+
+model JobRequirement {
+  id            Int       @id @default(autoincrement())
+  jobId         Int
+  tradeRoleId   Int
+  requiredSlots Int       // number of half-day periods required
+
+  job       Job       @relation(fields: [jobId], references: [id])
+  tradeRole TradeRole @relation(fields: [tradeRoleId], references: [id])
+
+  @@unique([jobId, tradeRoleId])
+}
+
+model Allocation {
+  id            Int           @id @default(autoincrement())
+  jobId         Int
+  tradePersonId Int
+  date          DateTime
+  period        HalfDayPeriod
+  deletedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  job         Job         @relation(fields: [jobId], references: [id])
+  tradePerson TradePerson @relation(fields: [tradePersonId], references: [id])
+  notes       Note[]
+
+  @@unique([tradePersonId, date, period], name: "allocation_unique_per_tradie_period")
+}
+
+model Note {
+  id            Int          @id @default(autoincrement())
+  content       String
+  authorId      Int
+  clientId      Int?
+  tradePersonId Int?
+  allocationId  Int?
+  createdAt     DateTime     @default(now())
+
+  author      User        @relation("NoteAuthor", fields: [authorId], references: [id])
+  client      Client?     @relation(fields: [clientId], references: [id])
+  tradePerson TradePerson? @relation("NoteTradePerson", fields: [tradePersonId], references: [id])
+  allocation  Allocation? @relation(fields: [allocationId], references: [id])
+}
+
+

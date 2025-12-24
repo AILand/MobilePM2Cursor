@@ -1,0 +1,321 @@
+.schedule-page {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.schedule-header h1 {
+  color: #2c3e50;
+}
+
+.view-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-controls button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-controls button.active {
+  background-color: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.week-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.week-controls button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.week-controls button:hover {
+  background-color: #f8f9fa;
+}
+
+.grid-view {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+  position: relative;
+}
+
+.schedule-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.schedule-grid thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.schedule-grid th {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #ddd;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-grid td {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  vertical-align: top;
+  min-width: 120px;
+}
+
+.grid-mode-toggle {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.grid-mode-toggle label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-buttons button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.toggle-buttons button.active {
+  background-color: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.row-label {
+  font-weight: 600;
+  background-color: #f8f9fa;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  min-width: 150px;
+}
+
+/* Ensure the top-left corner cell (row label in header) has highest z-index */
+.schedule-grid thead th.row-label,
+.schedule-grid thead th:first-child {
+  z-index: 20;
+  background-color: #f8f9fa;
+}
+
+/* Ensure header rows stay sticky - first row at top */
+.schedule-grid thead tr:first-child th {
+  top: 0;
+  z-index: 11;
+}
+
+/* Second header row (AM/PM) positioned below first row */
+.schedule-grid thead tr:nth-child(2) th {
+  top: 48px; /* Height of first header row */
+  z-index: 10;
+}
+
+.job-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.job-label strong {
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.client-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.schedule-cell {
+  height: 80px;
+}
+
+.allocation-cell {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 4px;
+  padding: 0.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  gap: 0.25rem;
+}
+
+.employee-allocation {
+  background-color: #fff;
+  border: 1px solid #90caf9;
+  border-radius: 3px;
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  position: relative;
+}
+
+.employee-allocation:last-child {
+  margin-bottom: 0;
+}
+
+.employee-info {
+  flex: 1;
+}
+
+.employee-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1976d2;
+  margin-bottom: 0.25rem;
+}
+
+.employee-roles {
+  font-size: 0.75rem;
+  color: #666;
+  font-style: italic;
+}
+
+.job-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1976d2;
+}
+
+.client-name {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.empty-cell {
+  color: #ccc;
+  text-align: center;
+  padding: 1rem;
+}
+
+.btn-delete-small {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gantt-container {
+  margin-top: 2rem;
+}
+
+.gantt-selector {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gantt-selector label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.gantt-selector select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.gantt-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gantt-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #667eea;
+  position: relative;
+}
+
+.gantt-date {
+  min-width: 150px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.gantt-job {
+  flex: 1;
+}
+
+.gantt-job strong {
+  display: block;
+  color: #1976d2;
+  margin-bottom: 0.25rem;
+}
+
+.gantt-job div {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+
+
