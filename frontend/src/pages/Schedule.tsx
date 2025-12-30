@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
-import { api } from "../utils/api";
+import { api, Job } from "../utils/api";
 import "./Schedule.css";
 
 interface AllocationSlot {
@@ -21,6 +21,7 @@ export default function Schedule() {
   const [selectedClientFilter, setSelectedClientFilter] = useState<number | null>(null);
   const [selectedJobFilter, setSelectedJobFilter] = useState<number | null>(null);
   const [showAllTradies, setShowAllTradies] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
     const day = d.getDay();
@@ -91,6 +92,43 @@ export default function Schedule() {
       setAllocationSlot(null);
     },
   });
+
+  const updateJobMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<Job> }) =>
+      api.jobs.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      setEditingJob(null);
+    },
+  });
+
+  const handleJobEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingJob) return;
+    
+    const formData = new FormData(e.currentTarget);
+    const requirements: Array<{ tradeRoleId: number; requiredSlots: number }> = [];
+    
+    tradeRoles?.forEach((role) => {
+      const slots = formData.get(`req_${role.id}`);
+      if (slots && Number(slots) > 0) {
+        requirements.push({
+          tradeRoleId: role.id,
+          requiredSlots: Number(slots),
+        });
+      }
+    });
+
+    const data = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string || undefined,
+      clientId: Number(formData.get("clientId")),
+      materials: formData.get("materials") as string || undefined,
+      requirements,
+    };
+
+    updateJobMutation.mutate({ id: editingJob.id, data });
+  };
 
   const handleAddAllocation = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -439,6 +477,71 @@ export default function Schedule() {
         </div>
       )}
 
+      {/* Job Edit Modal */}
+      {editingJob && (
+        <div className="modal-overlay" onClick={() => setEditingJob(null)}>
+          <div className="modal-content job-edit-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Job</h2>
+            <form onSubmit={handleJobEditSubmit}>
+              <div className="form-group">
+                <label>Name</label>
+                <input name="name" defaultValue={editingJob.name} required />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea name="description" defaultValue={editingJob.description || ""} rows={3} />
+              </div>
+              <div className="form-group">
+                <label>Client</label>
+                <select name="clientId" defaultValue={editingJob.clientId} required>
+                  <option value="">Select a client</option>
+                  {clients?.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Materials</label>
+                <input name="materials" defaultValue={editingJob.materials || ""} />
+              </div>
+              <div className="form-group">
+                <label>Requirements (half-day slots per role)</label>
+                <div className="requirements-grid">
+                  {tradeRoles?.map((role) => (
+                    <div key={role.id} className="requirement-item">
+                      <label>{role.name}</label>
+                      <input
+                        type="number"
+                        name={`req_${role.id}`}
+                        min="0"
+                        defaultValue={
+                          editingJob.requirements.find((r) => r.tradeRoleId === role.id)
+                            ?.requiredSlots || 0
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary" disabled={updateJobMutation.isPending}>
+                  {updateJobMutation.isPending ? "Updating..." : "Update"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingJob(null)}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {view === "grid" && (
         <div className="grid-view">
           <div className="grid-mode-toggle">
@@ -603,7 +706,12 @@ export default function Schedule() {
                     <tr key={job.id}>
                       <td className="row-label">
                         <div className="job-label">
-                          <strong>{job.name}</strong>
+                          <button
+                            className="job-title-link"
+                            onClick={() => setEditingJob(job)}
+                          >
+                            <strong>{job.name}</strong>
+                          </button>
                           <div className="client-label">{job.client.name}</div>
                           <div className="job-requirements">
                             {job.requirements.map((r) => {

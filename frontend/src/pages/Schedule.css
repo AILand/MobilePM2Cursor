@@ -429,6 +429,72 @@
   font-size: 0.85rem;
 }
 
+.job-title-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: color 0.15s;
+}
+
+.job-title-link:hover {
+  color: #667eea;
+}
+
+.job-title-link:hover strong {
+  color: #667eea;
+  text-decoration: underline;
+}
+
+/* Job Edit Modal */
+.job-edit-modal {
+  max-width: 500px;
+}
+
+.job-edit-modal .form-group input,
+.job-edit-modal .form-group select,
+.job-edit-modal .form-group textarea {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.job-edit-modal .form-group textarea {
+  resize: vertical;
+}
+
+.requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.requirement-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.requirement-item label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.requirement-item input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .client-label {
   font-size: 0.75rem;
   color: #666;
