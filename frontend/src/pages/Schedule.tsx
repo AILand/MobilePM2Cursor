@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
-import { api, Allocation } from "../utils/api";
+import { api } from "../utils/api";
 import "./Schedule.css";
+
+interface AllocationSlot {
+  date: string;
+  period: "AM" | "PM";
+  tradePersonId?: number;
+  jobId?: number;
+}
 
 export default function Schedule() {
   const { user } = useAuth();
   const [view, setView] = useState<"grid" | "gantt">("grid");
   const [gridMode, setGridMode] = useState<"byEmployee" | "byJob">("byEmployee");
   const [selectedTradie, setSelectedTradie] = useState<number | null>(null);
+  const [allocationSlot, setAllocationSlot] = useState<AllocationSlot | null>(null);
+  const [selectedRoleFilters, setSelectedRoleFilters] = useState<number[]>([]);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
     const day = d.getDay();
@@ -50,12 +59,44 @@ export default function Schedule() {
     enabled: user?.role === "SystemAdmin" || user?.role === "OfficeStaff",
   });
 
+  const { data: tradeRoles } = useQuery({
+    queryKey: ["tradeRoles"],
+    queryFn: () => api.tradies.roles(),
+    enabled: user?.role === "SystemAdmin" || user?.role === "OfficeStaff",
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.schedule.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["schedule"] });
     },
   });
+
+  const createMutation = useMutation({
+    mutationFn: (data: { jobId: number; tradePersonId: number; date: string; period: "AM" | "PM" }) =>
+      api.schedule.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["schedule"] });
+      setAllocationSlot(null);
+    },
+  });
+
+  const handleAddAllocation = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!allocationSlot) return;
+    
+    const formData = new FormData(e.currentTarget);
+    const selectedId = Number(formData.get("selection"));
+    
+    if (!selectedId) return;
+
+    createMutation.mutate({
+      jobId: allocationSlot.jobId || selectedId,
+      tradePersonId: allocationSlot.tradePersonId || selectedId,
+      date: allocationSlot.date,
+      period: allocationSlot.period,
+    });
+  };
 
   const getWeekDays = () => {
     const start = new Date(weekStart);
@@ -114,6 +155,57 @@ export default function Schedule() {
     setWeekStart(d.toISOString().split("T")[0]);
   };
 
+  // Get available jobs for a tradie on a specific slot (jobs not already assigned to them)
+  const getAvailableJobsForTradie = (tradePersonId: number, date: string, period: "AM" | "PM") => {
+    if (!jobs || !gridData) return [];
+    
+    // Find what job this tradie is already assigned to for this slot
+    const tradie = gridData.tradies.find((t) => t.id === tradePersonId);
+    const existingAllocation = tradie?.allocations.find(
+      (a) => a.date.split("T")[0] === date && a.period === period
+    );
+    
+    // If they already have an allocation, they can't be assigned to anything else
+    if (existingAllocation) return [];
+    
+    return jobs;
+  };
+
+  // Get available tradies for a job on a specific slot (tradies not already busy)
+  const getAvailableTradiesForSlot = (date: string, period: "AM" | "PM", roleFilters: number[] = []) => {
+    if (!tradies || !gridData) return [];
+    
+    // Find tradies who are NOT already assigned to any job for this slot
+    const busyTradieIds = gridData.tradies
+      .filter((t) => 
+        t.allocations.some((a) => a.date.split("T")[0] === date && a.period === period)
+      )
+      .map((t) => t.id);
+    
+    let available = tradies.filter((t) => !busyTradieIds.includes(t.id));
+    
+    // If role filters are selected, only show tradies with those roles
+    if (roleFilters.length > 0) {
+      available = available.filter((t) =>
+        t.roles.some((r) => roleFilters.includes(r.tradeRole.id))
+      );
+    }
+    
+    return available;
+  };
+
+  const handleRoleFilterToggle = (roleId: number) => {
+    setSelectedRoleFilters((prev) =>
+      prev.includes(roleId)
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId]
+    );
+  };
+
+  const clearRoleFilters = () => {
+    setSelectedRoleFilters([]);
+  };
+
   if (user?.role === "TradePerson") {
     return (
       <div className="schedule-page">
@@ -129,17 +221,24 @@ export default function Schedule() {
           </div>
         </div>
         <div className="gantt-view">
-          {mySchedule?.allocations.map((alloc) => (
-            <div key={alloc.id} className="gantt-item">
-              <div className="gantt-date">
-                {new Date(alloc.date).toLocaleDateString()} {alloc.period}
+          {mySchedule?.allocations.map((alloc) => {
+            const date = new Date(alloc.date);
+            const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+            const dateDisplay = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            return (
+              <div key={alloc.id} className={`gantt-item gantt-item-${alloc.period.toLowerCase()}`}>
+                <div className="gantt-date">
+                  <span className="gantt-day">{dayName}</span>
+                  <span className="gantt-date-text">{dateDisplay}</span>
+                  <span className={`gantt-period gantt-period-${alloc.period.toLowerCase()}`}>{alloc.period}</span>
+                </div>
+                <div className="gantt-job">
+                  <strong>{alloc.job.name}</strong>
+                  <div>{alloc.job.client.name}</div>
+                </div>
               </div>
-              <div className="gantt-job">
-                <strong>{alloc.job.name}</strong>
-                <div>{alloc.job.client.name}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {(!mySchedule || mySchedule.allocations.length === 0) && (
             <p>No allocations this week</p>
           )}
@@ -175,6 +274,159 @@ export default function Schedule() {
           <button onClick={() => handleWeekChange("next")}>Next →</button>
         </div>
       </div>
+
+      {/* Allocation Modal */}
+      {allocationSlot && (
+        <div className="modal-overlay" onClick={() => setAllocationSlot(null)}>
+          <div className="modal-content allocation-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>
+              {allocationSlot.tradePersonId ? "Select Job" : "Select Tradie"}
+            </h2>
+            <p className="modal-subtitle">
+              {new Date(allocationSlot.date).toLocaleDateString("en-US", { 
+                weekday: "long", 
+                month: "short", 
+                day: "numeric" 
+              })} - {allocationSlot.period}
+            </p>
+            {(() => {
+              // For job selection (employee view), no role filter needed
+              if (allocationSlot.tradePersonId) {
+                const availableJobs = getAvailableJobsForTradie(
+                  allocationSlot.tradePersonId,
+                  allocationSlot.date,
+                  allocationSlot.period
+                );
+                
+                if (availableJobs.length === 0) {
+                  return (
+                    <div className="no-options-message">
+                      <p>This employee already has an assignment for this time slot.</p>
+                      <div className="form-actions">
+                        <button type="button" onClick={() => setAllocationSlot(null)} className="btn-secondary">
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <form onSubmit={handleAddAllocation}>
+                    <div className="form-group">
+                      <label>Job</label>
+                      <select name="selection" required>
+                        <option value="">Select a job...</option>
+                        {availableJobs.map((job) => (
+                          <option key={job.id} value={job.id}>
+                            {job.name} ({job.client.name})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn-primary" disabled={createMutation.isPending}>
+                        {createMutation.isPending ? "Adding..." : "Add Allocation"}
+                      </button>
+                      <button type="button" onClick={() => setAllocationSlot(null)} className="btn-secondary">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                );
+              }
+              
+              // For tradie selection (job view), include role filter
+              const allAvailableTradies = getAvailableTradiesForSlot(
+                allocationSlot.date,
+                allocationSlot.period,
+                []
+              );
+              
+              const filteredTradies = getAvailableTradiesForSlot(
+                allocationSlot.date,
+                allocationSlot.period,
+                selectedRoleFilters
+              );
+              
+              if (allAvailableTradies.length === 0) {
+                return (
+                  <div className="no-options-message">
+                    <p>All tradies are already assigned for this time slot.</p>
+                    <div className="form-actions">
+                      <button type="button" onClick={() => setAllocationSlot(null)} className="btn-secondary">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+              
+              return (
+                <form onSubmit={handleAddAllocation}>
+                  {/* Role Filter */}
+                  {tradeRoles && tradeRoles.length > 0 && (
+                    <div className="form-group">
+                      <label>Filter by Trade Role</label>
+                      <div className="role-filter-chips">
+                        {tradeRoles.map((role) => (
+                          <button
+                            key={role.id}
+                            type="button"
+                            className={`role-chip ${selectedRoleFilters.includes(role.id) ? "active" : ""}`}
+                            onClick={() => handleRoleFilterToggle(role.id)}
+                          >
+                            {role.name}
+                          </button>
+                        ))}
+                        {selectedRoleFilters.length > 0 && (
+                          <button
+                            type="button"
+                            className="role-chip clear-btn"
+                            onClick={clearRoleFilters}
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="form-group">
+                    <label>
+                      Tradie {selectedRoleFilters.length > 0 && `(${filteredTradies.length} available)`}
+                    </label>
+                    {filteredTradies.length === 0 ? (
+                      <p className="filter-no-results">No tradies match the selected role filters.</p>
+                    ) : (
+                      <select name="selection" required>
+                        <option value="">Select a tradie...</option>
+                        {filteredTradies.map((tradie) => (
+                          <option key={tradie.id} value={tradie.id}>
+                            {tradie.user.name} - {tradie.roles.map((r) => r.tradeRole.name).join(", ")}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  <div className="form-actions">
+                    <button 
+                      type="submit" 
+                      className="btn-primary" 
+                      disabled={createMutation.isPending || filteredTradies.length === 0}
+                    >
+                      {createMutation.isPending ? "Adding..." : "Add Allocation"}
+                    </button>
+                    <button type="button" onClick={() => setAllocationSlot(null)} className="btn-secondary">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {view === "grid" && (
         <div className="grid-view">
@@ -231,9 +483,9 @@ export default function Schedule() {
                     {getPeriods().map(({ date, period }) => {
                       const alloc = findAllocation(tradie.id, date, period);
                       return (
-                        <td key={`${date.toISOString()}-${period}`} className="schedule-cell">
+                        <td key={`${date.toISOString()}-${period}`} className={`schedule-cell period-${period.toLowerCase()}`}>
                           {alloc ? (
-                            <div className="allocation-cell">
+                            <div className={`allocation-cell allocation-${period.toLowerCase()}`}>
                               <div className="job-name">{alloc.job.name}</div>
                               <div className="client-name">{alloc.job.client.name}</div>
                               <button
@@ -248,7 +500,17 @@ export default function Schedule() {
                               </button>
                             </div>
                           ) : (
-                            <div className="empty-cell">-</div>
+                            <button
+                              className="empty-cell-add"
+                              onClick={() => setAllocationSlot({
+                                date: date.toISOString().split("T")[0],
+                                period,
+                                tradePersonId: tradie.id,
+                              })}
+                              title="Add allocation"
+                            >
+                              +
+                            </button>
                           )}
                         </td>
                       );
@@ -269,9 +531,9 @@ export default function Schedule() {
                       {getPeriods().map(({ date, period }) => {
                         const allocations = findAllocationsByJob(job.id, date, period);
                         return (
-                          <td key={`${date.toISOString()}-${period}`} className="schedule-cell">
+                          <td key={`${date.toISOString()}-${period}`} className={`schedule-cell period-${period.toLowerCase()}`}>
                             {allocations.length > 0 ? (
-                              <div className="allocation-cell">
+                              <div className={`allocation-cell allocation-${period.toLowerCase()}`}>
                                 {allocations.map((alloc) => (
                                   <div key={alloc.id} className="employee-allocation">
                                     <div className="employee-info">
@@ -298,7 +560,20 @@ export default function Schedule() {
                                 ))}
                               </div>
                             ) : (
-                              <div className="empty-cell">-</div>
+                              <button
+                                className="empty-cell-add"
+                                onClick={() => {
+                                  setSelectedRoleFilters([]);
+                                  setAllocationSlot({
+                                    date: date.toISOString().split("T")[0],
+                                    period,
+                                    jobId: job.id,
+                                  });
+                                }}
+                                title="Add allocation"
+                              >
+                                +
+                              </button>
                             )}
                           </td>
                         );
@@ -337,28 +612,44 @@ export default function Schedule() {
           </div>
           {selectedTradie && ganttData && (
             <div className="gantt-view">
-              {ganttData.allocations.map((alloc) => (
-                <div key={alloc.id} className="gantt-item">
-                  <div className="gantt-date">
-                    {new Date(alloc.date).toLocaleDateString()} {alloc.period}
+              {getPeriods().map(({ date, period }) => {
+                const dateStr = date.toISOString().split("T")[0];
+                const alloc = ganttData.allocations.find(
+                  (a) => a.date.split("T")[0] === dateStr && a.period === period
+                );
+                const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+                const dateDisplay = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                
+                return (
+                  <div key={`${dateStr}-${period}`} className={`gantt-item gantt-item-${period.toLowerCase()} ${alloc ? "" : "gantt-item-empty"}`}>
+                    <div className="gantt-date">
+                      <span className="gantt-day">{dayName}</span>
+                      <span className="gantt-date-text">{dateDisplay}</span>
+                      <span className={`gantt-period gantt-period-${period.toLowerCase()}`}>{period}</span>
+                    </div>
+                    {alloc ? (
+                      <>
+                        <div className="gantt-job">
+                          <strong>{alloc.job.name}</strong>
+                          <div>{alloc.job.client.name}</div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm("Delete this allocation?")) {
+                              deleteMutation.mutate(alloc.id);
+                            }
+                          }}
+                          className="btn-delete-small"
+                        >
+                          ×
+                        </button>
+                      </>
+                    ) : (
+                      <div className="gantt-empty">Available</div>
+                    )}
                   </div>
-                  <div className="gantt-job">
-                    <strong>{alloc.job.name}</strong>
-                    <div>{alloc.job.client.name}</div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (confirm("Delete this allocation?")) {
-                        deleteMutation.mutate(alloc.id);
-                      }
-                    }}
-                    className="btn-delete-small"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {ganttData.allocations.length === 0 && <p>No allocations this week</p>}
+                );
+              })}
             </div>
           )}
         </div>

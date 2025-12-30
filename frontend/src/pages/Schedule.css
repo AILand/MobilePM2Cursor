@@ -5,6 +5,162 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0.75rem;
+}
+
+.modal-content {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+  font-size: 1.25rem;
+}
+
+.modal-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.no-options-message {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.no-options-message p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Role filter chips */
+.role-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.role-chip {
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.role-chip:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.role-chip.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.role-chip.clear-btn {
+  background: transparent;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.role-chip.clear-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.filter-no-results {
+  color: #999;
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #5568d3;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
 .schedule-header {
   display: flex;
   justify-content: space-between;
@@ -169,6 +325,17 @@
   z-index: 10;
 }
 
+/* AM/PM header tinting */
+.schedule-grid thead tr:nth-child(2) th:nth-child(even) {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.schedule-grid thead tr:nth-child(2) th:nth-child(odd):not(:first-child) {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
 .job-label {
   display: flex;
   flex-direction: column;
@@ -201,6 +368,17 @@
   justify-content: space-between;
   position: relative;
   gap: 0.2rem;
+}
+
+/* AM/PM color tinting for grid allocations */
+.allocation-am {
+  background-color: #fff8e1;
+  border-color: #ffcc80;
+}
+
+.allocation-pm {
+  background-color: #ede7f6;
+  border-color: #b39ddb;
 }
 
 .employee-allocation {
@@ -250,6 +428,33 @@
   text-align: center;
   padding: 0.75rem;
   font-size: 0.8rem;
+}
+
+.empty-cell-add {
+  width: 100%;
+  height: 100%;
+  min-height: 50px;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  background: transparent;
+  color: #bbb;
+  font-size: 1.5rem;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-cell-add:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.empty-cell-add:active {
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .btn-delete-small {
@@ -306,17 +511,72 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: #f8f9fa;
+  background-color: #e3f2fd;
   border-radius: 4px;
   border-left: 4px solid #667eea;
   position: relative;
 }
 
+/* AM/PM color tinting for gantt items */
+.gantt-item-am:not(.gantt-item-empty) {
+  background-color: #fff8e1;
+  border-left-color: #ff9800;
+}
+
+.gantt-item-pm:not(.gantt-item-empty) {
+  background-color: #ede7f6;
+  border-left-color: #7c4dff;
+}
+
+.gantt-item-empty {
+  background-color: #f8f9fa;
+  border-left-color: #dee2e6;
+}
+
+.gantt-item-empty.gantt-item-am {
+  background-color: #fffbf0;
+  border-left-color: #ffe0b2;
+}
+
+.gantt-item-empty.gantt-item-pm {
+  background-color: #f3e5f5;
+  border-left-color: #ce93d8;
+}
+
 .gantt-date {
-  min-width: 120px;
+  min-width: 130px;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.gantt-day {
   font-weight: 600;
   color: #2c3e50;
-  font-size: 0.9rem;
+  min-width: 32px;
+}
+
+.gantt-date-text {
+  color: #666;
+  min-width: 50px;
+}
+
+.gantt-period {
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.gantt-period-am {
+  color: #e65100;
+  background: rgba(255, 152, 0, 0.15);
+}
+
+.gantt-period-pm {
+  color: #6a1b9a;
+  background: rgba(156, 39, 176, 0.15);
 }
 
 .gantt-job {
@@ -332,6 +592,13 @@
 
 .gantt-job div {
   color: #666;
+  font-size: 0.85rem;
+}
+
+.gantt-empty {
+  flex: 1;
+  color: #aaa;
+  font-style: italic;
   font-size: 0.85rem;
 }
 
@@ -463,6 +730,15 @@
   .gantt-date {
     min-width: auto;
     font-size: 0.85rem;
+    width: 100%;
+  }
+
+  .gantt-day {
+    min-width: 28px;
+  }
+
+  .gantt-date-text {
+    flex: 1;
   }
 
   .gantt-job strong {
@@ -470,6 +746,10 @@
   }
 
   .gantt-job div {
+    font-size: 0.8rem;
+  }
+
+  .gantt-empty {
     font-size: 0.8rem;
   }
 }
