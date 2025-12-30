@@ -78,6 +78,7 @@ export default function Schedule() {
     mutationFn: (id: number) => api.schedule.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["schedule"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },
   });
 
@@ -86,6 +87,7 @@ export default function Schedule() {
       api.schedule.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["schedule"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
       setAllocationSlot(null);
     },
   });
