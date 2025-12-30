@@ -10,6 +10,7 @@ clientsRouter.use(authenticate, requireRole("SystemAdmin", "OfficeStaff"));
 const clientSchema = z.object({
   name: z.string().min(1),
   contact: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 clientsRouter.get("/", async (_req, res, next) => {

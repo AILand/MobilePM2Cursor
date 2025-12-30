@@ -12,6 +12,7 @@ export interface Client {
   id: number;
   name: string;
   contact?: string | null;
+  phone?: string | null;
   deletedAt?: string | null;
 }
 
@@ -122,12 +123,12 @@ export const api = {
   clients: {
     list: () => request<Client[]>("/clients"),
     get: (id: number) => request<Client>(`/clients/${id}`),
-    create: (data: { name: string; contact?: string }) =>
+    create: (data: { name: string; contact?: string; phone?: string }) =>
       request<Client>("/clients", {
         method: "POST",
         body: JSON.stringify(data),
       }),
-    update: (id: number, data: Partial<{ name: string; contact?: string }>) =>
+    update: (id: number, data: Partial<{ name: string; contact?: string; phone?: string }>) =>
       request<Client>(`/clients/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),

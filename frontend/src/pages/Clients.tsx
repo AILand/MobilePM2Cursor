@@ -44,7 +44,7 @@ export default function Clients() {
   };
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; contact?: string }) => api.clients.create(data),
+    mutationFn: (data: { name: string; contact?: string; phone?: string }) => api.clients.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       setShowForm(false);
@@ -73,6 +73,7 @@ export default function Clients() {
     const data = {
       name: formData.get("name") as string,
       contact: formData.get("contact") as string || undefined,
+      phone: formData.get("phone") as string || undefined,
     };
 
     if (editing) {
@@ -101,8 +102,12 @@ export default function Clients() {
                 <input name="name" defaultValue={editing?.name} required />
               </div>
               <div className="form-group">
-                <label>Contact</label>
+                <label>Contact Email</label>
                 <input name="contact" type="email" defaultValue={editing?.contact || ""} />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input name="phone" type="tel" defaultValue={editing?.phone || ""} placeholder="e.g. 0412 345 678" />
               </div>
               <div className="form-actions">
                 <button type="submit" className="btn-primary">
@@ -131,6 +136,7 @@ export default function Clients() {
               <th className="sortable" onClick={() => handleSort("contact")}>
                 Contact {getSortIndicator("contact")}
               </th>
+              <th>Phone</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -139,6 +145,7 @@ export default function Clients() {
               <tr key={client.id}>
                 <td>{client.name}</td>
                 <td>{client.contact || "-"}</td>
+                <td>{client.phone || "-"}</td>
                 <td>
                   <button onClick={() => setEditing(client)} className="btn-edit">
                     Edit

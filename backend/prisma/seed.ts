@@ -257,6 +257,7 @@ async function main() {
     data: {
       name: "ABC Renovations Ltd",
       contact: "contact@abcrenovations.com",
+      phone: "02 9123 4567",
     },
   });
 
@@ -264,6 +265,7 @@ async function main() {
     data: {
       name: "Home Sweet Home",
       contact: "info@homesweethome.com",
+      phone: "03 8765 4321",
     },
   });
 
@@ -271,6 +273,7 @@ async function main() {
     data: {
       name: "Modern Living Co",
       contact: "hello@modernliving.com",
+      phone: "0412 345 678",
     },
   });
 
@@ -278,6 +281,7 @@ async function main() {
     data: {
       name: "Elite Properties",
       contact: "info@eliteproperties.com",
+      phone: "02 9876 5432",
     },
   });
 
@@ -285,6 +289,7 @@ async function main() {
     data: {
       name: "Dream Homes Inc",
       contact: "contact@dreamhomes.com",
+      phone: "0423 456 789",
     },
   });
 
@@ -292,6 +297,7 @@ async function main() {
     data: {
       name: "Premium Builders",
       contact: "hello@premiumbuilders.com",
+      phone: "07 3456 7890",
     },
   });
 
