@@ -590,6 +590,17 @@
   font-size: 0.8rem;
   color: #1976d2;
   margin-bottom: 0.15rem;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.employee-name .first-name {
+  display: block;
+}
+
+.employee-name .last-name {
+  display: block;
 }
 
 .employee-roles {

@@ -739,7 +739,18 @@ export default function Schedule() {
                                 <div key={alloc.id} className="employee-allocation">
                                   <div className="employee-info">
                                     <div className="employee-name">
-                                      {alloc.tradePerson?.user?.name || "Unknown"}
+                                      {(() => {
+                                        const fullName = alloc.tradePerson?.user?.name || "Unknown";
+                                        const nameParts = fullName.split(" ");
+                                        const firstName = nameParts[0];
+                                        const lastName = nameParts.slice(1).join(" ");
+                                        return (
+                                          <>
+                                            <span className="first-name">{firstName}</span>
+                                            {lastName && <span className="last-name">{lastName}</span>}
+                                          </>
+                                        );
+                                      })()}
                                     </div>
                                     {alloc.tradePerson?.roles && alloc.tradePerson.roles.length > 0 && (
                                       <div className="employee-roles">
