@@ -41,6 +41,7 @@ export interface Job {
     tradeRoleId: number;
     tradeRole: TradeRole;
     requiredSlots: number;
+    filledSlots?: number;
   }>;
   firstAllocationDate?: string | null;
   deletedAt?: string | null;

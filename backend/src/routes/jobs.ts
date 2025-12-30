@@ -41,20 +41,52 @@ jobsRouter.get("/", async (_req, res, next) => {
         },
         allocations: {
           where: { deletedAt: null },
-          orderBy: { date: "asc" },
-          take: 1,
-          select: { date: true },
+          include: {
+            tradePerson: {
+              include: {
+                roles: {
+                  select: { tradeRoleId: true },
+                },
+              },
+            },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
     });
     
-    // Transform to include firstAllocationDate
-    const jobsWithStartDate = jobs.map((job) => ({
-      ...job,
-      firstAllocationDate: job.allocations[0]?.date || null,
-      allocations: undefined, // Remove allocations array from response
-    }));
+    // Transform to include firstAllocationDate and filledSlots per requirement
+    const jobsWithStartDate = jobs.map((job) => {
+      // Sort allocations by date to get firstAllocationDate
+      const sortedAllocations = [...job.allocations].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      const firstAllocationDate = sortedAllocations[0]?.date || null;
+      
+      // Count allocations per tradeRole
+      const filledSlotsByRole: Record<number, number> = {};
+      for (const allocation of job.allocations) {
+        for (const role of allocation.tradePerson.roles) {
+          filledSlotsByRole[role.tradeRoleId] = (filledSlotsByRole[role.tradeRoleId] || 0) + 1;
+        }
+      }
+      
+      // Add filledSlots to each requirement
+      const requirementsWithFilled = job.requirements.map((req) => ({
+        ...req,
+        filledSlots: Math.min(
+          filledSlotsByRole[req.tradeRoleId] || 0,
+          req.requiredSlots
+        ),
+      }));
+      
+      return {
+        ...job,
+        requirements: requirementsWithFilled,
+        firstAllocationDate,
+        allocations: undefined, // Remove allocations array from response
+      };
+    });
     
     res.json(jobsWithStartDate);
   } catch (err) {

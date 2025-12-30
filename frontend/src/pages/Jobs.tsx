@@ -241,7 +241,7 @@ export default function Jobs() {
                 <td>
                   {job.requirements.map((r) => (
                     <span key={r.id} className="requirement-badge">
-                      {r.tradeRole.name}: {r.requiredSlots} slots
+                      {r.tradeRole.name}: {r.filledSlots ?? 0}/{r.requiredSlots} slots
                     </span>
                   ))}
                 </td>
