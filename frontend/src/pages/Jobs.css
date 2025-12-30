@@ -223,6 +223,16 @@ tbody tr:hover {
   font-size: 0.75rem;
 }
 
+.requirement-badge.filled {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.requirement-badge.overfilled {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .jobs-page {

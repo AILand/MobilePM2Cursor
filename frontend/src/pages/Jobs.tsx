@@ -239,11 +239,19 @@ export default function Jobs() {
                 <td>{job.client.name}</td>
                 <td>{formatDate(job.firstAllocationDate)}</td>
                 <td>
-                  {job.requirements.map((r) => (
-                    <span key={r.id} className="requirement-badge">
-                      {r.tradeRole.name}: {r.filledSlots ?? 0}/{r.requiredSlots} slots
-                    </span>
-                  ))}
+                  {job.requirements.map((r) => {
+                    const filled = r.filledSlots ?? 0;
+                    const badgeClass = filled > r.requiredSlots
+                      ? "requirement-badge overfilled"
+                      : filled === r.requiredSlots
+                        ? "requirement-badge filled"
+                        : "requirement-badge";
+                    return (
+                      <span key={r.id} className={badgeClass}>
+                        {r.tradeRole.name}: {filled}/{r.requiredSlots} slots
+                      </span>
+                    );
+                  })}
                 </td>
                 <td>
                   <button onClick={() => setEditing(job)} className="btn-edit">

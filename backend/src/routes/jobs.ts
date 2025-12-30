@@ -74,10 +74,7 @@ jobsRouter.get("/", async (_req, res, next) => {
       // Add filledSlots to each requirement
       const requirementsWithFilled = job.requirements.map((req) => ({
         ...req,
-        filledSlots: Math.min(
-          filledSlotsByRole[req.tradeRoleId] || 0,
-          req.requiredSlots
-        ),
+        filledSlots: filledSlotsByRole[req.tradeRoleId] || 0,
       }));
       
       return {
