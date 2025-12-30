@@ -39,10 +39,24 @@ jobsRouter.get("/", async (_req, res, next) => {
             tradeRole: true,
           },
         },
+        allocations: {
+          where: { deletedAt: null },
+          orderBy: { date: "asc" },
+          take: 1,
+          select: { date: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
-    res.json(jobs);
+    
+    // Transform to include firstAllocationDate
+    const jobsWithStartDate = jobs.map((job) => ({
+      ...job,
+      firstAllocationDate: job.allocations[0]?.date || null,
+      allocations: undefined, // Remove allocations array from response
+    }));
+    
+    res.json(jobsWithStartDate);
   } catch (err) {
     next(err);
   }

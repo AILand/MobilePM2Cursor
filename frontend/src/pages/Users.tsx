@@ -1,17 +1,47 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, User } from "../utils/api";
 import "./Users.css";
 
+type SortColumn = "name" | "email" | "role";
+type SortDirection = "asc" | "desc";
+
 export default function Users() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const queryClient = useQueryClient();
 
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: () => api.users.list(),
   });
+
+  const sortedUsers = useMemo(() => {
+    if (!users) return [];
+    return [...users].sort((a, b) => {
+      const aVal = a[sortColumn].toLowerCase();
+      const bVal = b[sortColumn].toLowerCase();
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [users, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortColumn !== column) return <span className="sort-indicator">⇅</span>;
+    return <span className="sort-indicator active">{sortDirection === "asc" ? "↑" : "↓"}</span>;
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: { email: string; name: string; password: string; role: User["role"] }) =>
@@ -112,14 +142,20 @@ export default function Users() {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
+              <th className="sortable" onClick={() => handleSort("name")}>
+                Name {getSortIndicator("name")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("email")}>
+                Email {getSortIndicator("email")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("role")}>
+                Role {getSortIndicator("role")}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users?.map((user) => (
+            {sortedUsers.map((user) => (
               <tr key={user.id}>
                 <td>{user.name}</td>
                 <td>{user.email}</td>

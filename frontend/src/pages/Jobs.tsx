@@ -1,17 +1,76 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, Job, TradeRole } from "../utils/api";
+import { api, Job } from "../utils/api";
 import "./Jobs.css";
+
+type SortColumn = "name" | "client" | "jobStart";
+type SortDirection = "asc" | "desc";
+
+const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 export default function Jobs() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Job | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("jobStart");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const queryClient = useQueryClient();
 
   const { data: jobs } = useQuery({
     queryKey: ["jobs"],
     queryFn: () => api.jobs.list(),
   });
+
+  const sortedJobs = useMemo(() => {
+    if (!jobs) return [];
+    return [...jobs].sort((a, b) => {
+      let aVal: string;
+      let bVal: string;
+      
+      if (sortColumn === "name") {
+        aVal = a.name.toLowerCase();
+        bVal = b.name.toLowerCase();
+      } else if (sortColumn === "client") {
+        aVal = a.client.name.toLowerCase();
+        bVal = b.client.name.toLowerCase();
+      } else {
+        // For jobStart, handle null values - nulls go to the end
+        const aDate = a.firstAllocationDate;
+        const bDate = b.firstAllocationDate;
+        
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return sortDirection === "asc" ? 1 : -1;
+        if (!bDate) return sortDirection === "asc" ? -1 : 1;
+        
+        aVal = aDate;
+        bVal = bDate;
+      }
+      
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [jobs, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection(column === "jobStart" ? "desc" : "asc");
+    }
+  };
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortColumn !== column) return <span className="sort-indicator">⇅</span>;
+    return <span className="sort-indicator active">{sortDirection === "asc" ? "↑" : "↓"}</span>;
+  };
 
   const { data: clients } = useQuery({
     queryKey: ["clients"],
@@ -160,17 +219,25 @@ export default function Jobs() {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Client</th>
+              <th className="sortable" onClick={() => handleSort("name")}>
+                Name {getSortIndicator("name")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("client")}>
+                Client {getSortIndicator("client")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("jobStart")}>
+                Job Start {getSortIndicator("jobStart")}
+              </th>
               <th>Requirements</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {jobs?.map((job) => (
+            {sortedJobs.map((job) => (
               <tr key={job.id}>
                 <td>{job.name}</td>
                 <td>{job.client.name}</td>
+                <td>{formatDate(job.firstAllocationDate)}</td>
                 <td>
                   {job.requirements.map((r) => (
                     <span key={r.id} className="requirement-badge">

@@ -4,18 +4,50 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: #f0f2f5;
+  line-height: 1.5;
 }
 
 #root {
   min-height: 100vh;
 }
 
+/* Responsive Typography */
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+}
 
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+}
 
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Touch-friendly tap targets */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Better touch scrolling */
+.table-container,
+.grid-view {
+  -webkit-overflow-scrolling: touch;
+}

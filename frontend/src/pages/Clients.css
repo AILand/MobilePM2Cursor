@@ -1,19 +1,22 @@
 .clients-page {
   background: white;
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .page-header h1 {
   color: #2c3e50;
+  font-size: 1.35rem;
 }
 
 .page-header .btn-primary {
@@ -32,35 +35,40 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 0.75rem;
 }
 
 .modal-content {
   background: white;
-  padding: 2rem;
+  padding: 1.25rem;
   border-radius: 8px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-content h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #2c3e50;
+  font-size: 1.25rem;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0.875rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   color: #2c3e50;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.625rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
@@ -68,19 +76,20 @@
 
 .form-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
 }
 
 .btn-primary,
 .btn-secondary,
 .btn-edit,
 .btn-delete {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.875rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .btn-primary {
@@ -88,15 +97,27 @@
   color: white;
 }
 
+.btn-primary:active {
+  background-color: #5568d3;
+}
+
 .btn-secondary {
   background-color: #95a5a6;
   color: white;
 }
 
+.btn-secondary:active {
+  background-color: #7f8c8d;
+}
+
 .btn-edit {
   background-color: #3498db;
   color: white;
-  margin-right: 0.5rem;
+  margin-right: 0.35rem;
+}
+
+.btn-edit:active {
+  background-color: #2980b9;
 }
 
 .btn-delete {
@@ -104,13 +125,20 @@
   color: white;
 }
 
+.btn-delete:active {
+  background-color: #c0392b;
+}
+
 .table-container {
   overflow-x: auto;
+  margin: 0 -1rem;
+  padding: 0 1rem;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 500px;
 }
 
 thead {
@@ -119,14 +147,140 @@ thead {
 
 th,
 td {
-  padding: 1rem;
+  padding: 0.75rem 0.625rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+th {
+  font-weight: 600;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+th.sortable:hover {
+  background-color: #e9ecef;
+}
+
+th.sortable:active {
+  background-color: #dee2e6;
+}
+
+.sort-indicator {
+  margin-left: 0.35rem;
+  opacity: 0.35;
+  font-size: 0.8em;
+}
+
+.sort-indicator.active {
+  opacity: 1;
+  color: #667eea;
 }
 
 tbody tr:hover {
   background-color: #f8f9fa;
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .clients-page {
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
 
+  .page-header {
+    margin-bottom: 0.75rem;
+  }
 
+  .page-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-content h2 {
+    font-size: 1.15rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group input {
+    padding: 0.625rem 0.5rem;
+  }
+
+  .form-actions {
+    gap: 0.5rem;
+  }
+
+  th,
+  td {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .table-container {
+    margin: 0 -0.75rem;
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .clients-page {
+    padding: 0.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.1rem;
+  }
+
+  .page-header .btn-primary {
+    width: 100%;
+    text-align: center;
+    padding: 0.625rem;
+  }
+
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  .modal-content {
+    padding: 0.875rem;
+    max-height: calc(100vh - 3rem);
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  th,
+  td {
+    padding: 0.5rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .table-container {
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+}

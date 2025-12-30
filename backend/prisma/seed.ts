@@ -6,6 +6,16 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding database...");
 
+  // Clean up existing data that doesn't use upsert
+  // Order matters due to foreign key constraints
+  console.log("Cleaning up existing seed data...");
+  await prisma.note.deleteMany({});
+  await prisma.allocation.deleteMany({});
+  await prisma.jobRequirement.deleteMany({});
+  await prisma.job.deleteMany({});
+  await prisma.client.deleteMany({});
+  console.log("Cleanup completed");
+
   // Create trade roles
   const plumber = await prisma.tradeRole.upsert({
     where: { name: "Plumber" },
@@ -448,9 +458,6 @@ async function main() {
   });
 
   console.log("Created jobs");
-
-  // Clear existing allocations to avoid unique constraint errors
-  await prisma.allocation.deleteMany({});
 
   // Create some allocations for this week
   const today = new Date();

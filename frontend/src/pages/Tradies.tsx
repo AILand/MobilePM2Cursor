@@ -1,17 +1,59 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, TradePerson, User } from "../utils/api";
+import { api, TradePerson } from "../utils/api";
 import "./Tradies.css";
+
+type SortColumn = "name" | "email" | "roles";
+type SortDirection = "asc" | "desc";
 
 export default function Tradies() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<TradePerson | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const queryClient = useQueryClient();
 
   const { data: tradies } = useQuery({
     queryKey: ["tradies"],
     queryFn: () => api.tradies.list(),
   });
+
+  const sortedTradies = useMemo(() => {
+    if (!tradies) return [];
+    return [...tradies].sort((a, b) => {
+      let aVal: string;
+      let bVal: string;
+      
+      if (sortColumn === "name") {
+        aVal = a.user.name.toLowerCase();
+        bVal = b.user.name.toLowerCase();
+      } else if (sortColumn === "email") {
+        aVal = a.user.email.toLowerCase();
+        bVal = b.user.email.toLowerCase();
+      } else {
+        aVal = a.roles.map(r => r.tradeRole.name).sort().join(", ").toLowerCase();
+        bVal = b.roles.map(r => r.tradeRole.name).sort().join(", ").toLowerCase();
+      }
+      
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [tradies, sortColumn, sortDirection]);
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortColumn !== column) return <span className="sort-indicator">⇅</span>;
+    return <span className="sort-indicator active">{sortDirection === "asc" ? "↑" : "↓"}</span>;
+  };
 
   const { data: tradeRoles } = useQuery({
     queryKey: ["tradeRoles"],
@@ -129,14 +171,20 @@ export default function Tradies() {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Trade Roles</th>
+              <th className="sortable" onClick={() => handleSort("name")}>
+                Name {getSortIndicator("name")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("email")}>
+                Email {getSortIndicator("email")}
+              </th>
+              <th className="sortable" onClick={() => handleSort("roles")}>
+                Trade Roles {getSortIndicator("roles")}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {tradies?.map((tradie) => (
+            {sortedTradies.map((tradie) => (
               <tr key={tradie.id}>
                 <td>{tradie.user.name}</td>
                 <td>{tradie.user.email}</td>
