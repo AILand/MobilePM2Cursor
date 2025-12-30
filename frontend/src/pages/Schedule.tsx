@@ -603,6 +603,21 @@ export default function Schedule() {
                         <div className="job-label">
                           <strong>{job.name}</strong>
                           <div className="client-label">{job.client.name}</div>
+                          <div className="job-requirements">
+                            {job.requirements.map((r) => {
+                              const filled = r.filledSlots ?? 0;
+                              const badgeClass = filled > r.requiredSlots
+                                ? "requirement-badge overfilled"
+                                : filled === r.requiredSlots
+                                  ? "requirement-badge filled"
+                                  : "requirement-badge";
+                              return (
+                                <span key={r.id} className={badgeClass}>
+                                  {r.tradeRole.name}: {filled}/{r.requiredSlots}
+                                </span>
+                              );
+                            })}
+                          </div>
                         </div>
                       </td>
                       {getPeriods().map(({ date, period }) => {

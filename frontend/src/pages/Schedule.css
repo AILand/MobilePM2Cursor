@@ -435,6 +435,33 @@
   font-weight: normal;
 }
 
+.job-requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.25rem;
+}
+
+.requirement-badge {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 0.15rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.requirement-badge.filled {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.requirement-badge.overfilled {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
 .schedule-cell {
   height: 55px;
 }
@@ -835,6 +862,16 @@
 
   .client-label {
     font-size: 0.7rem;
+  }
+
+  .job-requirements {
+    gap: 0.15rem;
+    margin-top: 0.2rem;
+  }
+
+  .requirement-badge {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.6rem;
   }
 
   .btn-delete-small {
