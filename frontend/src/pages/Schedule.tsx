@@ -20,6 +20,7 @@ export default function Schedule() {
   const [selectedRoleFilters, setSelectedRoleFilters] = useState<number[]>([]);
   const [selectedClientFilter, setSelectedClientFilter] = useState<number | null>(null);
   const [selectedJobFilter, setSelectedJobFilter] = useState<number | null>(null);
+  const [showAllTradies, setShowAllTradies] = useState(false);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
     const day = d.getDay();
@@ -471,20 +472,38 @@ export default function Schedule() {
               </div>
             )}
             {gridMode === "byEmployee" && jobs && (
-              <div className="client-filter">
-                <label>Job:</label>
-                <select
-                  value={selectedJobFilter ?? ""}
-                  onChange={(e) => setSelectedJobFilter(e.target.value ? Number(e.target.value) : null)}
-                >
-                  <option value="">All Jobs</option>
-                  {jobs.map((job) => (
-                    <option key={job.id} value={job.id}>
-                      {job.name} ({job.client.name})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <>
+                <div className="client-filter">
+                  <label>Job:</label>
+                  <select
+                    value={selectedJobFilter ?? ""}
+                    onChange={(e) => {
+                      setSelectedJobFilter(e.target.value ? Number(e.target.value) : null);
+                      if (!e.target.value) setShowAllTradies(false);
+                    }}
+                  >
+                    <option value="">All Jobs</option>
+                    {jobs.map((job) => (
+                      <option key={job.id} value={job.id}>
+                        {job.name} ({job.client.name})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedJobFilter && (
+                  <label className="show-all-toggle">
+                    <span className="toggle-label">Show all employees</span>
+                    <div className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={showAllTradies}
+                        onChange={(e) => setShowAllTradies(e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                    </div>
+                  </label>
+                )}
+              </>
             )}
           </div>
           {!gridData && gridMode === "byEmployee" && (
@@ -517,7 +536,15 @@ export default function Schedule() {
             <tbody>
               {gridMode === "byEmployee" ? (
                 // Employee-centric view (original)
-                gridData?.tradies.map((tradie) => (
+                (() => {
+                  // Filter tradies based on job selection
+                  const filteredTradies = selectedJobFilter && !showAllTradies
+                    ? gridData?.tradies.filter((tradie) =>
+                        tradie.allocations.some((a) => a.jobId === selectedJobFilter)
+                      )
+                    : gridData?.tradies;
+                  
+                  return filteredTradies?.map((tradie) => (
                   <tr key={tradie.id}>
                     <td className="row-label">{tradie.user.name}</td>
                     {getPeriods().map(({ date, period }) => {
@@ -561,7 +588,8 @@ export default function Schedule() {
                       );
                     })}
                   </tr>
-                ))
+                ));
+                })()
               ) : (
                 // Job-centric view (new)
                 (() => {
