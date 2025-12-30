@@ -18,6 +18,8 @@ export default function Schedule() {
   const [selectedTradie, setSelectedTradie] = useState<number | null>(null);
   const [allocationSlot, setAllocationSlot] = useState<AllocationSlot | null>(null);
   const [selectedRoleFilters, setSelectedRoleFilters] = useState<number[]>([]);
+  const [selectedClientFilter, setSelectedClientFilter] = useState<number | null>(null);
+  const [selectedJobFilter, setSelectedJobFilter] = useState<number | null>(null);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
     const day = d.getDay();
@@ -56,6 +58,12 @@ export default function Schedule() {
   const { data: jobs } = useQuery({
     queryKey: ["jobs"],
     queryFn: () => api.jobs.list(),
+    enabled: user?.role === "SystemAdmin" || user?.role === "OfficeStaff",
+  });
+
+  const { data: clients } = useQuery({
+    queryKey: ["clients"],
+    queryFn: () => api.clients.list(),
     enabled: user?.role === "SystemAdmin" || user?.role === "OfficeStaff",
   });
 
@@ -446,6 +454,38 @@ export default function Schedule() {
                 Employee
               </button>
             </div>
+            {gridMode === "byJob" && clients && (
+              <div className="client-filter">
+                <label>Client:</label>
+                <select
+                  value={selectedClientFilter ?? ""}
+                  onChange={(e) => setSelectedClientFilter(e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">All Clients</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {gridMode === "byEmployee" && jobs && (
+              <div className="client-filter">
+                <label>Job:</label>
+                <select
+                  value={selectedJobFilter ?? ""}
+                  onChange={(e) => setSelectedJobFilter(e.target.value ? Number(e.target.value) : null)}
+                >
+                  <option value="">All Jobs</option>
+                  {jobs.map((job) => (
+                    <option key={job.id} value={job.id}>
+                      {job.name} ({job.client.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           {!gridData && gridMode === "byEmployee" && (
             <div style={{ padding: "2rem", textAlign: "center" }}>Loading schedule data...</div>
@@ -482,9 +522,10 @@ export default function Schedule() {
                     <td className="row-label">{tradie.user.name}</td>
                     {getPeriods().map(({ date, period }) => {
                       const alloc = findAllocation(tradie.id, date, period);
+                      const showAlloc = alloc && (selectedJobFilter === null || alloc.jobId === selectedJobFilter);
                       return (
                         <td key={`${date.toISOString()}-${period}`} className={`schedule-cell period-${period.toLowerCase()}`}>
-                          {alloc ? (
+                          {showAlloc ? (
                             <div className={`allocation-cell allocation-${period.toLowerCase()}`}>
                               <div className="job-name">{alloc.job.name}</div>
                               <div className="client-name">{alloc.job.client.name}</div>
@@ -499,7 +540,7 @@ export default function Schedule() {
                                 ×
                               </button>
                             </div>
-                          ) : (
+                          ) : !alloc ? (
                             <button
                               className="empty-cell-add"
                               onClick={() => setAllocationSlot({
@@ -511,6 +552,10 @@ export default function Schedule() {
                             >
                               +
                             </button>
+                          ) : (
+                            <div className="allocation-cell allocation-filtered">
+                              <div className="filtered-indicator">—</div>
+                            </div>
                           )}
                         </td>
                       );
@@ -519,8 +564,12 @@ export default function Schedule() {
                 ))
               ) : (
                 // Job-centric view (new)
-                jobs && jobs.length > 0 ? (
-                  jobs.map((job) => (
+                (() => {
+                  const filteredJobs = jobs?.filter((job) => 
+                    selectedClientFilter === null || job.clientId === selectedClientFilter
+                  ) || [];
+                  return filteredJobs.length > 0 ? (
+                  filteredJobs.map((job) => (
                     <tr key={job.id}>
                       <td className="row-label">
                         <div className="job-label">
@@ -583,10 +632,11 @@ export default function Schedule() {
                 ) : (
                   <tr>
                     <td colSpan={11} style={{ textAlign: "center", padding: "2rem" }}>
-                      No jobs found. Please create jobs first.
+                      {selectedClientFilter ? "No jobs found for this client." : "No jobs found. Please create jobs first."}
                     </td>
                   </tr>
-                )
+                );
+                })()
               )}
             </tbody>
           </table>

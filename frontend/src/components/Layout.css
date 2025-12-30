@@ -1,7 +1,8 @@
 .layout {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .navbar {
@@ -86,10 +87,14 @@
 
 .main-content {
   flex: 1;
-  padding: 1rem;
-  max-width: 1400px;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Hamburger Menu */
