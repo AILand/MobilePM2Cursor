@@ -14,7 +14,7 @@ interface AllocationSlot {
 export default function Schedule() {
   const { user } = useAuth();
   const [view, setView] = useState<"grid" | "gantt">("grid");
-  const [gridMode, setGridMode] = useState<"byEmployee" | "byJob">("byEmployee");
+  const [gridMode, setGridMode] = useState<"byEmployee" | "byJob">("byJob");
   const [selectedTradie, setSelectedTradie] = useState<number | null>(null);
   const [allocationSlot, setAllocationSlot] = useState<AllocationSlot | null>(null);
   const [selectedRoleFilters, setSelectedRoleFilters] = useState<number[]>([]);
@@ -434,16 +434,16 @@ export default function Schedule() {
             <label>View by:</label>
             <div className="toggle-buttons">
               <button
-                onClick={() => setGridMode("byEmployee")}
-                className={gridMode === "byEmployee" ? "active" : ""}
-              >
-                Employee
-              </button>
-              <button
                 onClick={() => setGridMode("byJob")}
                 className={gridMode === "byJob" ? "active" : ""}
               >
                 Job
+              </button>
+              <button
+                onClick={() => setGridMode("byEmployee")}
+                className={gridMode === "byEmployee" ? "active" : ""}
+              >
+                Employee
               </button>
             </div>
           </div>
