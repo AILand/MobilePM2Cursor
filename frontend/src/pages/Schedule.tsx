@@ -157,13 +157,13 @@ export default function Schedule() {
             onClick={() => setView("grid")}
             className={view === "grid" ? "active" : ""}
           >
-            Grid View
+            Overview
           </button>
           <button
             onClick={() => setView("gantt")}
             className={view === "gantt" ? "active" : ""}
           >
-            Gantt View
+            Tradie Schedule
           </button>
         </div>
         <div className="week-controls">
