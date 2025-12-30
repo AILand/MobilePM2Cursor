@@ -626,11 +626,11 @@ async function main() {
     },
   });
 
-  // Thursday PM - Lisa (Electrician) on Job 6
+  // Thursday PM - Sophia (Electrician) on Job 6
   await prisma.allocation.create({
     data: {
       jobId: job6.id,
-      tradePersonId: tradePerson4.id,
+      tradePersonId: tradePerson8.id,
       date: createDate(thursday),
       period: "PM",
     },
@@ -678,11 +678,11 @@ async function main() {
     },
   });
 
-  // Tuesday AM - Sarah (Tiler) on Job 8
+  // Tuesday AM - Emma (Tiler) on Job 8
   await prisma.allocation.create({
     data: {
       jobId: job8.id,
-      tradePersonId: tradePerson2.id,
+      tradePersonId: tradePerson6.id,
       date: createDate(tuesday),
       period: "AM",
     },
@@ -698,11 +698,11 @@ async function main() {
     },
   });
 
-  // Wednesday AM - John (Plumber) on Job 9
+  // Wednesday AM - David (Plumber) on Job 9
   await prisma.allocation.create({
     data: {
       jobId: job9.id,
-      tradePersonId: tradePerson1.id,
+      tradePersonId: tradePerson5.id,
       date: createDate(wednesday),
       period: "AM",
     },
@@ -718,13 +718,13 @@ async function main() {
     },
   });
 
-  // Thursday AM - David (Plumber) on Job 10
+  // Next Monday PM - John (Plumber) on Job 10
   await prisma.allocation.create({
     data: {
       jobId: job10.id,
-      tradePersonId: tradePerson5.id,
-      date: createDate(thursday),
-      period: "AM",
+      tradePersonId: tradePerson1.id,
+      date: createDate(nextMonday),
+      period: "PM",
     },
   });
 
