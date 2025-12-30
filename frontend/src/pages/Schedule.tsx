@@ -609,36 +609,33 @@ export default function Schedule() {
                         const allocations = findAllocationsByJob(job.id, date, period);
                         return (
                           <td key={`${date.toISOString()}-${period}`} className={`schedule-cell period-${period.toLowerCase()}`}>
-                            {allocations.length > 0 ? (
-                              <div className={`allocation-cell allocation-${period.toLowerCase()}`}>
-                                {allocations.map((alloc) => (
-                                  <div key={alloc.id} className="employee-allocation">
-                                    <div className="employee-info">
-                                      <div className="employee-name">
-                                        {alloc.tradePerson?.user?.name || "Unknown"}
-                                      </div>
-                                      {alloc.tradePerson?.roles && alloc.tradePerson.roles.length > 0 && (
-                                        <div className="employee-roles">
-                                          {alloc.tradePerson.roles.map((r) => r.tradeRole.name).join(", ")}
-                                        </div>
-                                      )}
+                            <div className={`allocation-cell allocation-${period.toLowerCase()}`}>
+                              {allocations.map((alloc) => (
+                                <div key={alloc.id} className="employee-allocation">
+                                  <div className="employee-info">
+                                    <div className="employee-name">
+                                      {alloc.tradePerson?.user?.name || "Unknown"}
                                     </div>
-                                    <button
-                                      onClick={() => {
-                                        if (confirm("Delete this allocation?")) {
-                                          deleteMutation.mutate(alloc.id);
-                                        }
-                                      }}
-                                      className="btn-delete-small"
-                                    >
-                                      ×
-                                    </button>
+                                    {alloc.tradePerson?.roles && alloc.tradePerson.roles.length > 0 && (
+                                      <div className="employee-roles">
+                                        {alloc.tradePerson.roles.map((r) => r.tradeRole.name).join(", ")}
+                                      </div>
+                                    )}
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
+                                  <button
+                                    onClick={() => {
+                                      if (confirm("Delete this allocation?")) {
+                                        deleteMutation.mutate(alloc.id);
+                                      }
+                                    }}
+                                    className="btn-delete-small"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
                               <button
-                                className="empty-cell-add"
+                                className="add-more-btn"
                                 onClick={() => {
                                   setSelectedRoleFilters([]);
                                   setAllocationSlot({
@@ -647,11 +644,11 @@ export default function Schedule() {
                                     jobId: job.id,
                                   });
                                 }}
-                                title="Add allocation"
+                                title="Add tradie"
                               >
                                 +
                               </button>
-                            )}
+                            </div>
                           </td>
                         );
                       })}
